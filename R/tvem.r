@@ -30,25 +30,26 @@
 #' 
 #' @references 
 #' Eilers, P. H. C., & Marx, B.  D. (1996). Flexible smoothing with B-splines
-#' and penalties. Statistical Science, 11: 89-121.
+#' and penalties. Statistical Science, 11: 89-121. <doi:10.1214/ss/1038425655>
 #' @references
 #' Hastie, T, Tibshirani, R. (1993). Varying-coefficient models. Journal 
-#' of the Royal Statistical Socety, B, 55:757-796.
+#' of the Royal Statistical Socety, B, 55:757-796. <doi:10.1057/9780230280830_39>
 #' @references
 #' Li, R., Dziak, J. J., Tan, X., Huang, L., Wagner, A. T., & Yang, J. (2017).
 #' TVEM (time-varying effect model) SAS macro users' guide (Version 3.1.1).
 #' University Park: The Methodology Center, Penn State. Retrieved from
-#' http://methodology.psu.edu
+#' <http://methodology.psu.edu>.
 #' @references
 #' Liang, K. Y., Zeger, S. L. Longitudinal data analysis using generalized linear
-#' models. Biometrika. 1986; 73:13-22.
+#' models. Biometrika. 1986; 73:13-22. <doi:10.1093/biomet/73.1.13>
 #' @references
 #' Tan, X., Shiyko, M. P., Li, R., Li, Y., & Dierker, L. (2012). A time-varying
 #' effect model for intensive longitudinal data. Psychological Methods, 17: 
-#' 61-77.
+#' 61-77. <doi:10.1037/a0025814>
 #' @references
 #' Wood, S. N., Goude, Y., & Shaw, S. (2015). Generalized additive models 
-#' for large data sets. Applied Statistics, 64: 139-155.
+#' for large data sets. Applied Statistics, 64: 139-155. ISBN 10 1498728332, 
+#' ISBN 13 978-1498728331.
 #' 
 #' @param data The dataset containing the observations, assumed
 #' to be in long form (i.e., one row per observation, potentially

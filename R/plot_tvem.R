@@ -35,9 +35,25 @@ plot.tvem <- function(x,
                       which_plot=NULL,
                       diagnostics=FALSE, 
                       exponentiate=FALSE, ...) {
+  old_par <- par(no.readonly = TRUE);
+  on.exit(par(old_par));
+  num_tv_coefs <- length(x$grid_fitted_coefficients);
+  if (use_panes) {
+    if (diagnostics) {
+      panel_dims <- c(1,2);
+    } else {
+      if (num_tv_coefs==1) {panel_dims <- c(1,1);}
+      if (num_tv_coefs==2) {panel_dims <- c(1,2);}
+      if (num_tv_coefs==3 | num_tv_coefs==4) {panel_dims <- c(2,2);}
+      if (num_tv_coefs==5 | num_tv_coefs==6) {panel_dims <- c(3,2);}
+      if (num_tv_coefs==7 | num_tv_coefs==8) {panel_dims <- c(4,2);}
+      if (num_tv_coefs==9) {panel_dims <- c(3,3);}
+      if(num_tv_coefs>10) {stop("Too many functions to plot in panes.");}  
+    }
+    par(mfrow=panel_dims);
+  };
   if (diagnostics) {
     if (exponentiate) {stop("Error:  This function cannot currently provide diagnostic plots on the odds ratio scale.");}
-    if (use_panes) {par(mfrow=c(1,2))};
     hist(x$back_end_model$fitted,
          main="Residuals",
          xlab="Residual");
@@ -47,16 +63,6 @@ plot.tvem <- function(x,
          xlab="Fitted",
          ylab="Residuals");
   } else {
-    num_tv_coefs <- length(x$grid_fitted_coefficients);
-    if (use_panes) {
-      if (num_tv_coefs==1) {par(mfrow=c(1,1));}
-      if (num_tv_coefs==2) {par(mfrow=c(1,2));}
-      if (num_tv_coefs==3 | num_tv_coefs==4) {par(mfrow=c(2,2));}
-      if (num_tv_coefs==5 | num_tv_coefs==6) {par(mfrow=c(3,2));}
-      if (num_tv_coefs==7 | num_tv_coefs==8) {par(mfrow=c(4,2));}
-      if (num_tv_coefs==9) {par(mfrow=c(3,3));}
-      if(num_tv_coefs>10) {stop("Too many functions to plot in panes.");}  
-    }
     the_grid <- x$time_grid;
     temp_plot_function <- function(the_var_name,
                                    the_grid,
