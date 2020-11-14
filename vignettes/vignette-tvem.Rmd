@@ -18,9 +18,11 @@ knitr::opts_chunk$set(
 
 In this example we simulate a longitudinal dataset and fit a simple time-varying coefficient model to it using the `tvem` package.  We show that this can be done for either a continuous or a binary outcome variable.  Time-varying coefficient models are discussed further by Tan, Shiyko, Li, Li and Dierker (2012). They are an application of the varying-coefficient models approach of Hastie and Tibshirani (1993) to intensive longitudinal data.
 
-Before running the examples, first install and load the `tvem` package.  A `.zip` or `.tar.gz` file containing the package is available at  [https://github.com/dziakj1/TvemPackage](https://github.com/dziakj1/TvemPackage), and it can then be used with the `install.packages()` function in [R code](https://www.r-project.org), 
- `Packages > Install Package(s)` from Local Files in the [R GUI](https://www.r-project.org),
- or `Tools > Install Packages` in [RStudio](https://www.rstudio.com), to install the package.
+Before running the examples, first install and load the `tvem` package.  
+A `.zip` or `.tar.gz` file containing the package is available at  [https://github.com/dziakj1/TvemPackage_development](https://github.com/dziakj1/TvemPackage_development), and it can then be used with the `install.packages()` function in R code, 
+ `Packages > Install Package(s)` from Local Files in the R graphical user interface,
+ or `Tools > Install Packages` in the RStudio application, to  install the package.
+ The package is also available at [https://github.com/dziakj1/tvem](https://github.com/dziakj1/tvem) for use with the `install_github` function.
  We also intend to submit this package to CRAN, from where it would then be able to be installed directly.  Of course, if you are viewing this guide from within R using the `vignette()` function, then the package is already installed.
  
  After you install the package on your system, you can then load it as usual with the `library()` function.
