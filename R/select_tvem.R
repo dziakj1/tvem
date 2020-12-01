@@ -18,6 +18,17 @@ select_tvem <- function(max_knots=5,
   #' 
   #' @return A TVEM object for the fitted model, with an additional component containing
   #' a table of information criteria.
+  #'  
+  #'@examples
+  #' set.seed(123)
+  #' the_data <- simulate_tvem_example(n_subjects=200)
+  #' tvem_model <- tvem(data=the_data,
+  #'               formula=y~1,
+  #'               id=subject_id,
+  #'               time=time)
+  #' print(tvem_model)
+  #' plot(tvem_model)
+  #' 
   #' @export
   
   args1 <- match.call();  

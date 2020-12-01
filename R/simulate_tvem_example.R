@@ -38,6 +38,10 @@
 #'
 #' @importFrom stats rbinom rnorm
 #'
+#' @examples 
+#' set.seed(123)
+#' the_data <- simulate_tvem_example(simulate_binary=TRUE)
+#'
 #' @export
 
 simulate_tvem_example <- function(

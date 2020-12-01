@@ -152,9 +152,19 @@
 #'@importFrom stats AIC as.formula binomial coef
 #'           gaussian glm plogis poisson qnorm rbinom
 #'           rnorm sd terms update var
-#'  
-#'    
-#' @export
+#' 
+#'@examples
+#' set.seed(123)
+#' the_data <- simulate_tvem_example()
+#' tvem_model <- tvem(data=the_data,
+#'               formula=y~x1,
+#'               invar_effects=~x2,
+#'               id=subject_id,
+#'               time=time)
+#' print(tvem_model)
+#' plot(tvem_model)
+#' 
+#'@export
 
 tvem <- function(data,
                  formula,
