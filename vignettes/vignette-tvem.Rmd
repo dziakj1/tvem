@@ -223,6 +223,95 @@ plot(model_binary2, exponentiate=TRUE)
 ```
 
 Although we do not present an example, Poisson count outcomes with a log link can be modeled similarly by specifying `family=poisson()` instead of `family=binomial()`. However, for overdispersed or zero-inflated counts, the Poisson distribution might not be appropriate.  Currently, the only distributions supported by the `tvem` package are normal with identity link function for continuous numerical responses, binomial with logistic link for binary responses, and Poisson with log link for count responses. 
+
+# Analysis with Sampling Weights
+
+In some studies, it is helpful to weight participants within the sample, so that some participants have more influence on the final estimates than others. This is often done to counteract some characteristic of the study design or implementation which could cause bias if not properly adjusted for.  For example, if people from a particular group were more likely to be included in the sample than other people, certain kinds of statistics for the overall population can still be estimated in an unbiased way, but they might require that these oversampled people be weighted downwards.
+
+The `tvem` package can account for sampling weights, by multiplying each participant's contribution to the pseudolikelihood by that participant's sample weight.  Ordinarily, the `tvem` function will automatically normalize the weights, which means adjusting them so that they have an average of 1.  Without this adjustment, the standard errors might be calculated incorrectly because the number of subjects could be miscounted.  For example, a participant with a weight of 100 should not really count as 100 separate participants for purposes of determining sample size.  If you are in an unusual situation where you need to leave the weights as specified, use the option `normalize_weights=FALSE`. However, if you are in any doubt, leave `normalize_weights` at its default of `TRUE`.
+
+As a simplistic example, suppose a researcher records the height in centimeters of children on their tenth birthday, and twice a year afterwards until their sixteenth birthday.  Suppose that in the population of interest, 50% of the children were male and 50% were female.  However, suppose girls were less likely to agree to be in the study.  Therefore, in the final sample, about 2/3 of the participants were boys, thus twice as many boys as girls.  The investigator consults with a statistician and decides to give each girl twice the sampling weight of a boy, so that the overall weighted results give equal attention to boys and girls in calculating overall estimates.  The following code will simulate a fairly realistic dataset from such a study.
+
+```{r}
+set.seed(12345)
+n <- 100
+simulated_dataset <- NULL
+for (this_id in 1:n) {
+  age <- seq(10,16,by=.5)
+  female <- rbinom(1,1,1/3)
+  sample_weight <- ifelse(female==1,yes=2,no=1)
+  if (female==1) {
+    logistic_curve <- round(rnorm(1,0,1) + 135 + 
+                              runif(1,.9,1.1)*(160-135)/(1+exp(-.75*(age-13))) + 
+                              rnorm(length(age),0,.5),1)
+  } else {
+    logistic_curve <- round(rnorm(1,0,1) + 140 + 
+                              runif(1,.9,1.1)*(175-140)/(1+exp(-(age-13))) +
+                              rnorm(length(age),0,.5),1)
+  }
+  simulated_dataset <- rbind(simulated_dataset,
+                             data.frame(id=this_id,
+                                        sample_weight=sample_weight,
+                                        female=female,
+                                        age=age,
+                                        height=logistic_curve))
+}
+summary(simulated_dataset)
+```
+
+
+The simplest TVEM that can be done with this data is an estimate of the average growth curve over time, averaging over individual differences and ignoring sex.  In this case, the intercept is the only time-varying coefficient and becomes the estimate of the fitted mean conditional on time.  The following code fits this model with and without weights.  A lower number of knots than usual is used, because there are relatively few distinct values of time (age) in the dataset.
+
+```{r}
+tvem1_unweighted <- tvem(data=simulated_dataset,
+                         formula=height~1,
+                         id=id,
+                         num_knots=5,
+                         time=age)
+tvem1_weighted <- tvem(data=simulated_dataset,
+                         formula=height~1,
+                         id=id,
+                         num_knots=5,
+                         time=age,
+                         weights=sample_weight)
+plot(tvem1_weighted)
+```
+
+The plots of the two models look superficially similar so only one is shown above. However, a close examination of the fitted results shows that the weighted dataset leads to an estimated average height  of about 0-3 centimeters shorter than the unweighted dataset, depending on age.
+
+```{r}
+print(summary((tvem1_unweighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
+print(summary((tvem1_weighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
+```
+
+This is because the weighted analysis attempts to generalize to a population with equal numbers of girls and boys, while the unweighted analysis attempts to generalize to a population of mostly boys.  Boys are taller than girls on average, during their teenage years.
+
+This example is not particularly compelling as an illustration of the need for weights, because if weights depend only on sex then conditioning on sex in the model will the weights unnecessary.   Once sex (dummy-coded as 1 for female and 0 for male) is represented as part of the estimated mean model, the weight becomes unnecessary. Note that sex has a time-varying effect on height even if sex itself remains constant, because the difference in height between males and females depends on age.
+
+```{r}
+tvem2_unweighted <- tvem(data=simulated_dataset,
+                         formula=height~female,
+                         id=id,
+                         num_knots=5,
+                         time=age)
+tvem2_weighted <- tvem(data=simulated_dataset,
+                       formula=height~female,
+                       id=id,
+                       num_knots=5,
+                       time=age,
+                       weights=sample_weight)
+plot(tvem2_weighted)
+print(summary((tvem2_unweighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
+print(summary((tvem2_weighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
+```
+
+The plot at left shows the estimated expected height by age for participants with ``female==0`` (males), and the plot at right shows the signed difference between groups (very roughly speaking, the effect on height of being female).
+
+However, in a more realistic example the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which are not necessarily of interest as covariates in our model.  In this case, sampling weights may become more important.  If you are in doubt, don't try to construct or use weights by yourself.  However, if you are in a situation that requires weights (as in analyzing a large-scale social or economic survey), the `weights` argument allows you to use them in `tvem`. 
+
+
+
+
 # References
 
 * de Boor, C. (1972). On calculating with B-splines. Journal of Approximation Theory, 6: 50–62.
