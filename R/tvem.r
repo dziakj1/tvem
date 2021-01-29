@@ -84,12 +84,10 @@
 #' For a binary outcome, use binomial().  For a count outcome, you can 
 #' use poisson().  The parentheses after the family name are there because it is 
 #' actually a built-in R object.
+#' @param weights An optional sampling weight variable.
 #' @param num_knots The number of interior knots assumed per spline function,
-#' not counting exterior knots. The user can either specify a single number
-#' for each function (e.g., 3), or else a vector of numbers, the first
-#' for the intercept and the others for the time-varying covariates 
-#' (e.g., c(2,3,2)). If penalized=TRUE is used, it is
-#' probably okay to leave num_knots at its default.
+#' not counting exterior knots. This is assumed to be the same for each function.
+#' If penalized=TRUE is used, it is probably okay to leave num_knots at its default.
 #' @param spline_order The shape of the function between knots, with a
 #' default of 3 representing cubic spline.
 #' @param penalty_function_order The order of the penalty function (see 
@@ -116,12 +114,18 @@
 #' @param method Fitting method (an optional argument about computational 
 #' details passed on to the mgcv::bam function as method).  We strongly recommend
 #' leaving it at the default value.
-#' @param use_naive_se  Save time by using a simpler, less valid formula for 
+#' @param use_naive_se  Whether to save time by using a simpler, less valid formula for 
 #' standard errors. Only do this if you are doing TVEM inside a loop for
 #' bootstrapping or model selection and plan to ignore these standard errors.
-#' @param print_gam_formula  Print the formula used to do the back-end calculations
+#' @param print_gam_formula  whether to print the formula used to do the back-end calculations
 #' in the bam (large data gam) function in the mgcv package.
-#' 
+#' @param normalize_weights Whether to rescale (standardize) the weights variable to have a mean 
+#' of 1 for the dataset used in the analysis. Setting this to FALSE might lead to invalid 
+#' standard errors caused by misrepresentation of the true sample size. This 
+#' option is irrelevant and ignored if a weight variable is not specified, because
+#' in that case all the weights are effectively 1 anyway.  An error will result if the function is asked to rescale weights and any of the weights are negative; however, it is very rare for
+#' sampling weights to be negative.
+#'
 #' @return An object of type tvem. The components of an object of 
 #' type tvem are as follows:
 #' \describe{
@@ -138,7 +142,14 @@
 #' invar_effects, their estimated regression coefficients and 
 #' standard errors are shown here.}
 #' \item{model_information}{A list summarizing the options
-#' specified in the call to the function.}
+#' specified in the call to the function, as well as fit statistics
+#' based on the log-pseudo-likelihood function. The term pseudo
+#' here means that the likelihood function is evaluated as though
+#' the correct knot locations were known, as though the 
+#' observations were independent and, if applicable, as though sampling 
+#' weights were multiples of a participant rather than 
+#' inverse probabilities. This allows tvem to be used without
+#' specifying a fully parametric probability model.}
 #' \item{back_end_model}{The full output from the bam() 
 #' function from the mgcv package, which was used to fit the 
 #' penalized spline regression model underlying the TVEM.}
@@ -172,6 +183,7 @@ tvem <- function(data,
                  time,
                  invar_effects=NULL,
                  family=gaussian(), # use binomial() for binary;
+                 weights=NULL,
                  num_knots=20,  
                  # number of interior knots per function (not counting exterior knots);
                  spline_order=3,
@@ -183,12 +195,20 @@ tvem <- function(data,
                  basis="ps",
                  method="fREML",
                  use_naive_se=FALSE,
-                 print_gam_formula=FALSE
-) {   
+                 print_gam_formula=FALSE,
+                 normalize_weights=TRUE) 
+{   
   ##################################
   # Process the input;
   ################################## 
   m <- match.call(expand.dots = FALSE);
+  weights_argument_number <- match("weights",names(m));
+  if (is.na(weights_argument_number)) {
+    use_weights <- FALSE;
+  } else {
+    use_weights <- TRUE;
+    weights_variable_name <- as.character(m[[weights_argument_number]]);
+  } 
   m$formula <- NULL;
   m$invar_effects <- NULL;
   m$family <- NULL;
@@ -202,13 +222,14 @@ tvem <- function(data,
   m$method <- NULL;
   m$use_naive_se <- NULL;
   m$print_gam_formula <- NULL;
+  m$normalize_weights <- NULL;
   if (is.matrix(eval.parent(m$data))) {
     m$data <- as.data.frame(data);
   }
   m[[1]] <- quote(stats::model.frame);
   m <- eval.parent(m); 
   id_variable_name <- as.character(substitute(id));
-  time_variable_name <- as.character(substitute(time));
+  time_variable_name <- as.character(substitute(time)); 
   if (is.character(family)) {
     # Handle the possibility that the user specified family
     # as a string instead of an object of class family.
@@ -254,8 +275,7 @@ tvem <- function(data,
   if (whether_intercept != 1) {
     stop("An intercept function is required in the current version of this function")
   }
-  formula_variable_names <- all.vars(formula);
-  #formula_variable_names <- attr(attr(the_terms,"factors"),"dimnames")[[1]]; 
+  formula_variable_names <- all.vars(formula); 
   if (is.null(invar_effects)) {
     num_invar_effects <- 0;
     invar_effects_names <- NA;
@@ -271,6 +291,9 @@ tvem <- function(data,
   if (num_invar_effects>0) {
     names_to_check <- c(names_to_check,
                         invar_effects_names);
+  }
+  if (use_weights) {
+    names_to_check <- c(names_to_check, weights_variable_name);
   }
   for (variable_name in names_to_check) {
     if (sum(is.na(data_for_analysis[,variable_name]))>0) {
@@ -291,17 +314,27 @@ tvem <- function(data,
   } else {
     varying_effects_names <- NA;
   }
-  if (length(num_knots)==1) {
-    num_knots_by_effect <- rep(num_knots, 1+num_varying_effects);
-  } else {
-    if (length(num_knots)==1+num_varying_effects) {
-      num_knots_by_effect <- num_knots;
-    } else {
-      stop(paste("Please either provide a single num_knots, or else a vector with",
-                 "values for each time-varying coefficient including the intercept."));
-    }
+  if (length(num_knots)>1) {
+      stop(paste("Please provide a single number for num_knots."));
   };
   crit_value <- qnorm(1-alpha/2);
+  if (use_weights) {
+    if (max(abs(data_for_analysis))<1e-8) {
+      stop("The weights must not all be zero.");
+    }
+    if (normalize_weights) {
+      if (min(data_for_analysis[,weights_variable_name])<0) {
+        stop("Weights cannot be rescaled if any of them are negative."); 
+      } 
+      data_for_analysis$weights_for_analysis <- data_for_analysis[,weights_variable_name] / mean(data_for_analysis[,weights_variable_name]);
+    } else {
+      data_for_analysis$weights_for_analysis <- data_for_analysis[,weights_variable_name];
+    }
+  };
+  if (num_knots + spline_order + 1 > length(unique(time_variable))) {
+    stop(paste("Because of the limited number of unique time points, \n",
+               "please provide a smaller value for num_knots."));
+  }
   ####################################################################
   # Construct regular grid for plotting fitted coefficient functions;
   ####################################################################
@@ -350,7 +383,7 @@ tvem <- function(data,
   }
   new_text <- paste("~ . + s(",time_variable_name,",bs='",basis,"',by=NA,pc=0,",
                     "k=",
-                    num_knots_by_effect[1]+spline_order+1,",fx=",
+                    num_knots+spline_order+1,",fx=",
                     ifelse(penalize,"FALSE","TRUE"),")",sep=""); 
   # for time-varying intercept; 
   bam_formula <- update(bam_formula,as.formula(new_text)); 
@@ -366,7 +399,7 @@ tvem <- function(data,
                         ",",
                         penalty_function_order,"),",
                         "k=",
-                        num_knots_by_effect[1+i]+spline_order+1,",fx=",ifelse(penalize,"FALSE","TRUE"),
+                        num_knots+spline_order+1,",fx=",ifelse(penalize,"FALSE","TRUE"),
                         ")",sep=""); 
       bam_formula <- update(bam_formula,as.formula(new_text));
     }
@@ -388,10 +421,22 @@ tvem <- function(data,
     }
   }
   if (print_gam_formula) {print(bam_formula);}
-  model1 <- mgcv::bam(bam_formula,
-                      data=data_for_analysis,
-                      family=family,
-                      method=method);
+  if (use_weights) {
+    weights_for_analysis <- NULL; # this is a clumsy workaround
+    # to tell the R syntax checker that weights_for_analysis 
+    # is not an undeclared object (but is actually a column of 
+    # data_for_analysis);
+    model1 <- mgcv::bam(bam_formula,
+                        data=data_for_analysis,
+                        family=family,
+                        weights=weights_for_analysis,
+                        method=method);
+  } else {
+    model1 <- mgcv::bam(bam_formula,
+                        data=data_for_analysis,
+                        family=family,
+                        method=method);
+  }
   ##################################
   # Extract coefficient estimates;
   ##################################
@@ -441,6 +486,10 @@ tvem <- function(data,
     for (i in unique(id_variable[which(!is.na(id_variable))])) {
       these <- which(id_variable==i);
       residuals_these <- model1$y[these] - model1$fitted.values[these];
+      if (use_weights) {
+        stopifnot(length(residuals_these) == length(model1$weights[these]));
+        residuals_these <- residuals_these * model1$weights[these];
+      }
       if (family$family=="gaussian") {
         multiplier <- 1/working_sigsqd;
       }
@@ -571,6 +620,10 @@ tvem <- function(data,
                             pseudo_aic=AIC(model1),
                             pseudo_bic=AIC(model1,k=log(nsub)),
                             used_listwise_deletion=used_listwise_deletion);
+  if (use_weights) {
+    model_information <- c(model_information,
+                           weights_variable_name = weights_variable_name);
+  }
   answer <- list(time_grid=time_grid,
                  grid_fitted_coefficients=grid_fitted_coefficients,
                  invar_effects_estimates=invar_effects_estimates,
