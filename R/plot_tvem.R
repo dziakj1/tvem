@@ -70,6 +70,13 @@ plot.tvem <- function(x,
                                    ymin,
                                    ymax,
                                    exponentiate) {
+      if (ymax - ymin < 1e-3) {
+         warning(paste("At least one of the coefficient functions has been",
+                       "estimated as essentially equal to zero across the,",
+                       "interval ('shrunken to zero').  It should be treated",
+                       "as removed from the model, and its confidence intervals",
+                       "should be ignored."));
+      }
       if (exponentiate) {
         plot(x=the_grid,
              y=exp(the_coef$estimate),
