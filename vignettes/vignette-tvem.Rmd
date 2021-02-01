@@ -307,7 +307,7 @@ print(summary((tvem2_weighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
 
 The plot at left shows the estimated expected height by age for participants with ``female==0`` (males), and the plot at right shows the signed difference between groups (very roughly speaking, the effect on height of being female).
 
-However, in a more realistic example the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which are not necessarily of interest as covariates in our model.  In this case, sampling weights may become more important.  If you are in doubt, don't try to construct or use weights by yourself.  However, if you are in a situation that requires weights (as in analyzing a large-scale social or economic survey), the `weights` argument allows you to use them in `tvem`. 
+However, in a more realistic example the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which are not necessarily of interest as covariates in our model.  In some public use datasets, the full set of variables which would be needed to construct the weights are not provided, for purposes of confidentiality of the original participants.  If you are in doubt, don't try to construct  sampling weights by yourself.  However, if you are analyzing an existing dataset that has a  weights variable (as in many large-scale social or economic surveys), the `weights` argument allows you to use them in `tvem`. As a caveat, more complex kinds of social surveys, involving clusters and subsampling, may not be supported correctly in this package.
 
 
 
