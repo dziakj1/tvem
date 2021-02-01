@@ -70,9 +70,10 @@ plot.tvem <- function(x,
                                    ymin,
                                    ymax,
                                    exponentiate) {
-      if (ymax - ymin < 1e-3) {
+      print(ymax-ymin)
+      if (ymax - ymin < 1e-2) {
          warning(paste("At least one of the coefficient functions has been",
-                       "estimated as essentially equal to zero across the,",
+                       "estimated as essentially equal to zero across the",
                        "interval ('shrunken to zero').  It should be treated",
                        "as removed from the model, and its confidence intervals",
                        "should be ignored."));
