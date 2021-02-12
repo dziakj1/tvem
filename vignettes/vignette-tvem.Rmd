@@ -22,8 +22,20 @@ Before running the examples, first install and load the `tvem` package.
 A `.zip` or `.tar.gz` file containing the package is available at  [https://github.com/dziakj1/TvemPackage_development](https://github.com/dziakj1/TvemPackage_development), and it can then be used with the `install.packages()` function in R code, 
  `Packages > Install Package(s)` from Local Files in the R graphical user interface,
  or `Tools > Install Packages` in the RStudio application, to  install the package.
- The package is also available at [https://github.com/dziakj1/tvem](https://github.com/dziakj1/tvem) for use with the `install_github` function.
- We also intend to submit this package to CRAN, from where it would then be able to be installed directly.  Of course, if you are viewing this guide from within R using the `vignette()` function, then the package is already installed.
+ The package is also available at [https://github.com/dziakj1/tvem](https://github.com/dziakj1/tvem) for use with the `install_github` function as follows:
+
+```{r,eval=FALSE}
+install.packages(’devtools’)
+library(devtools)
+install_github(’dziakj1/tvem’)
+```
+
+It is also available from the CRAN archive using the command 
+```{r,eval=FALSE}
+install.packages("tvem")
+````
+
+  Of course, if you are viewing this guide from within R using the `vignette()` function, then the package is already installed.
  
  After you install the package on your system, you can then load it as usual with the `library()` function.
 
@@ -84,7 +96,7 @@ print(model1_2knots_unpenalized)
 plot(model1_2knots_unpenalized)
 ```
 
-The plot shows the estimated coefficient function, and approximate estimates for 95% pointwise confidence intervals (not corrected for potential multiple comparisons) for the value of the function at each time.
+The plot shows the estimated coefficient function, and approximate estimates for 95% pointwise confidence intervals (not corrected for potential multiple comparisons) for the value of the function at each time. The expected value of $Y$, represented in this model by the single time-varying function $\beta(t)$, is seen increasing from about 2 at the beginning of the interval of study to about 7 at the end.
 
 We do not estimate random effects in the current version of this package.  Instead, we use a (possibly penalized) form of generalized estimating equations with working independence, and adjust the standard errors for within-subject correlation using a sandwich formula.
 
@@ -104,7 +116,7 @@ print(model2)
 plot(model2)
 ```
 
-The highest number of interior knots in the range is selected. It might be reasonable to run the function again with a higher value of `max_knots`, to see whether there might be an even better fit that had not been found yet.  Note that the individual knots and their locations do not have a special interpretation (as they do in some ``changepoint'' models); they are just a tool to make the fitted function more flexible than a simple polynomial would be.  Let us try again with a maximum of ten interior knots.
+In the plot, the expected value of $X_1$ decreases from about 6 at the beginning of the interval of study to about 4 at the end.  The highest number of interior knots in the range is selected by `select_tvem`. It might be reasonable to run the function again with a higher value of `max_knots`, to see whether there might be an even better fit that had not been found yet.  Note that the individual knots and their locations do not have a special interpretation (as they do in some ``changepoint'' models); they are just a tool to make the fitted function more flexible than a simple polynomial would be.  Let us try again with a maximum of ten interior knots.
 
 ```{r,fig.width=4,fig.height=4}
 model2_selected_knots <- select_tvem(data=the_data,
@@ -116,7 +128,7 @@ print(model2_selected_knots)
 plot(model2_selected_knots)
 ```
 
-The fit continues improving with higher and higher numbers of knots, but the differences in fit are so small no further insight would be gained by trying more.  The `use_bic` option can be set to `TRUE` in order to use a more parsimonious criterion that might be minimized at a smaller number of knots. 
+This is visually almost identical to the previous plot. The fit continues improving with higher and higher numbers of knots, but the differences in fit are so small no further insight would be gained by trying more.  The `use_bic` option can be set to `TRUE` in order to use a more parsimonious criterion that might be minimized at a smaller number of knots. 
 
 ```{r,fig.width=4,fig.height=4}
 model2_selected_knots_bic <- select_tvem(data=the_data,
@@ -129,7 +141,7 @@ print(model2_selected_knots_bic)
 plot(model2_selected_knots_bic)
 ```
 
-Now five knots have been selected.
+Now five knots have been selected, although again the plot does not look much different.
 
 It would be good to repeat this analysis to plot the mean of $x_2$ over time in the same way.  
 
@@ -168,7 +180,7 @@ plot(model4)
 
 The implied mean model is $E(y|t) =\beta_0(t)+\beta_1(t)x_1(t) + \beta_2 x_2(t).$  Notice that only covariates with time-varying effects are listed in the formula argument. The invar_effect argument is used for covariates with time-invariant effects.  Also notice that a tilde (`~`) sign is needed before the list of covariates with time-invariant effects, because it is treated as the right-hand side of a formula.  If there were multiple covariates with time-invariant effects, they would be listed  as follows: `~x2+x3+x4` which again follows R style for the right-hand side of a formula.
 
-In the output, there is no longer a plot for the coefficient of $x_2$ as a function of time, because $\beta_2$ is considered constant over time even if $x_2$ varies.  Instead, the estimate and estimated standard error of $\beta_2$ are given as text in the output from print.
+In the output, there is no longer a plot for the coefficient of $x_2$ as a function of time, because $\beta_2$ is considered constant over time even if $x_2$ varies.  Instead, the estimate and estimated standard error of $\beta_2$ are given as text in the output from `print`. The plots for the intercept and `x1` coefficients do not look much different from before. The estimated intercept function now appears slightly nonlinear over time, but it is not clear whether this departure from a line is significant; in fact, it is not clear that the function is appreciably changing over time at all, due to the wide confidence intervals.
 
 The seeming oscillations in confidence interval width in the plot do not have any particular interpretation;  they are just an artifact of the locations of the knots. Also, the confidence intervals shown are approximate pointwise confidence intervals, much like those in the Methodology Center's `%TVEM` SAS macro.  They are not simultaneous confidence bands, so they do not directly correct for multiple comparisons. 
 
@@ -277,7 +289,9 @@ tvem1_weighted <- tvem(data=simulated_dataset,
 plot(tvem1_weighted)
 ```
 
-The plots of the two models look superficially similar so only one is shown above. However, a close examination of the fitted results shows that the weighted dataset leads to an estimated average height  of about 0-3 centimeters shorter than the unweighted dataset, depending on age.
+The plots of the two models look superficially similar so only one is shown above.  It shows an increase in average height over time, following a slightly nonlinear trajectory that seems to accelerate around age 13. 
+
+However, a close examination of the fitted results shows that the weighted dataset leads to an estimated average height of about 0-3 centimeters shorter than the unweighted dataset, depending on age.
 
 ```{r}
 print(summary((tvem1_unweighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
@@ -305,9 +319,9 @@ print(summary((tvem2_unweighted$grid_fitted_coefficients$`(Intercept)`$estimate)
 print(summary((tvem2_weighted$grid_fitted_coefficients$`(Intercept)`$estimate)))
 ```
 
-The plot at left shows the estimated expected height by age for participants with ``female==0`` (males), and the plot at right shows the signed difference between groups (very roughly speaking, the effect on height of being female).
+The plot at left shows the estimated expected height by age for participants with ``female==0`` (males), and the plot at right shows the signed difference between groups (very roughly speaking, the effect on height of being female). Of course, the plot at right does not mean that girls become shorter over time, because girls are also affected by the increasing intercept function. It only means that the average height of girls becomes smaller in comparison to boys of the same age. The fact that it is sometimes difficult to distinguish between within-person changes and between-person differences is one reason why TVEM results need to be interpreted thoughtfully.
 
-However, in a more realistic example the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which are not necessarily of interest as covariates in our model.  In some public use datasets, the full set of variables which would be needed to construct the weights are not provided, for purposes of confidentiality of the original participants.  If you are in doubt, don't try to construct  sampling weights by yourself.  However, if you are analyzing an existing dataset that has a  weights variable (as in many large-scale social or economic surveys), the `weights` argument allows you to use them in `tvem`. As a caveat, more complex kinds of social surveys, involving clusters and subsampling, may not be supported correctly in this package.
+In this example, including sex as a covariate renders it unnecessary to weight by sex. However, in a more complicated and realistic example, the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which may not be of interest as meaningful covariates in our model.  In some public use datasets, the full set of variables which would be needed to construct the weights are not provided, for purposes of confidentiality of the original participants.  If you are in doubt, don't try to construct  sampling weights by yourself.  However, if you are analyzing an existing dataset that has a  weights variable (as in many large-scale social or economic surveys), the `weights` argument allows you to use them in `tvem`. As a caveat, more complex kinds of social surveys, involving clusters and subsampling, may not be supported correctly in this package.
 
 
 
