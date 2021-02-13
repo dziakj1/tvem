@@ -9,7 +9,8 @@ Authors@R: c(person(given="John J.", family="Dziak",
 					 comment = c(ORCID = "0000-0003-0762-5495")),
               person(given="Donna L.", family="Coffman", role = "aut",comment=c(ORCID="0000-0001-6305-6579")),
               person(given="Runze", family="Li", role = "aut",comment=c(ORCID="0000-0002-0154-2202")),
-			  person(given="Kaylee", family="Litson", role = "aut",  comment=c(ORCID="0000-0003-1296-4811")))
+			  person(given="Kaylee", family="Litson", role = "aut",  comment=c(ORCID="0000-0003-1296-4811")),
+              person(given="Yajnaseni",family="Chakraborti",role="aut"))
 VignetteBuilder: knitr
 Depends: mgcv
 Suggests: knitr, rmarkdown
