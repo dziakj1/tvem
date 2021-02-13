@@ -25,9 +25,9 @@ A `.zip` or `.tar.gz` file containing the package is available at  [https://gith
  The package is also available at [https://github.com/dziakj1/tvem](https://github.com/dziakj1/tvem) for use with the `install_github` function as follows:
 
 ```{r,eval=FALSE}
-install.packages(’devtools’)
+install.packages("devtools")
 library(devtools)
-install_github(’dziakj1/tvem’)
+install_github("dziakj1/tvem")
 ```
 
 It is also available from the CRAN archive using the command 
