@@ -1,8 +1,8 @@
 Package: tvem
 Type: Package
 Title: Time-Varying Effect Models
-Version: 1.2-0
-Date: 2021-02-19
+Version: 1.2-1
+Date: 2021-07-9
 Authors@R: c(person(given="John J.", family="Dziak",
                      role = c("aut", "cre"),
                      email = "dziakj1@gmail.com",
