@@ -91,8 +91,13 @@
 #' @param spline_order The shape of the function between knots, with a
 #' default of 3 representing cubic spline.
 #' @param penalty_function_order The order of the penalty function (see 
-#' Eilers and Marx, 1996), with a default of 2 for second-order 
-#' difference penalty.
+#' Eilers and Marx, 1996), with a default of 1 for first-order 
+#' difference penalty.  Eilers and Marx (1996) used second-order difference
+#' but we found first-order seemed to perform parsimoniously in this setting.
+#' Please feel free to consider setting this to 2 to explore other possible 
+#' results. The penalty function is something analogous to a prior distribution
+#' describing how smooth or flat the estimated coefficient functions should be,  
+#' with 1 being smoothest.
 #' @param grid The number of points at which the spline coefficients
 #' will be estimated, for the purposes of the pointwise estimates and 
 #' pointwise standard errors to be included in the output object. The
