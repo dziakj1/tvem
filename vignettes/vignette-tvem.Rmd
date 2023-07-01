@@ -323,8 +323,55 @@ The plot at left shows the estimated expected height by age for participants wit
 
 In this example, including sex as a covariate renders it unnecessary to weight by sex. However, in a more complicated and realistic example, the  probabilities of entering the sample might depend on factors such as city of residence, racial or ethnic background, economic class, etc., which may not be of interest as meaningful covariates in our model.  In some public use datasets, the full set of variables which would be needed to construct the weights are not provided, for purposes of confidentiality of the original participants.  If you are in doubt, don't try to construct  sampling weights by yourself.  However, if you are analyzing an existing dataset that has a  weights variable (as in many large-scale social or economic surveys), the `weights` argument allows you to use them in `tvem`. As a caveat, more complex kinds of social surveys, involving clusters and subsampling, may not be supported correctly in this package.
 
+# New feature
+ 
+Although `tvem` is intended for longitudinal data observed over time, 
+it now also works with a certain kind of
+cross-sectional data. In such a dataset, each
+participant (subject) is only measured at a single measurement time,
+but everyone's measurement time differs, so that the 
+participants together are spread across the time range of interest. 
+This might happen with a sample of people with different ages, 
+where age is treated as a number and not a category.
+Remember that the TVEM method is descriptive 
+and fits a marginal model, not a subject-specific one. In the 
+cross-sectional age example, `tvem` would not be able to distinguish 
+cohort effects (the effect of being born in a particular time period)
+from aging effects (the effect of being alive for a particular length
+of time). In a cross-sectional sample of people measured at the same
+time, those two effects are confounded anyway (since age equals
+current year minus birth year), so it is reasonable that 
+`tvem` treats them as the same.
+The ordinary `simulate_tvem_example` function will not simulate
+cross-sectional data, so a new simulation function is provided.
 
+```{r}
 
+cross_sectional_example <- simulate_cross_sectional_tvem_example(
+  n_subjects = 500,  
+  min_time = 20,
+  max_time = 70,
+  simulate_binary = TRUE,
+)
+print(head(cross_sectional_example))
+print(summary(cross_sectional_example))
+
+model1_cross_sectional <- tvem(data=cross_sectional_example,
+                               num_knots=2,
+                               spline_order=1,
+               formula=y~1,
+               id=subject_id,
+               time=time)
+print(model1_cross_sectional)
+plot(model1_cross_sectional)
+
+model2_cross_sectional <- tvem(data=cross_sectional_example,
+                               formula=y~x1+x2,
+                               id=subject_id,
+                               time=time)
+print(model2_cross_sectional)
+plot(model2_cross_sectional)
+```
 
 # References
 
