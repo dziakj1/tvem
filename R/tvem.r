@@ -38,7 +38,11 @@
 #' Li, R., Dziak, J. J., Tan, X., Huang, L., Wagner, A. T., & Yang, J. (2017).
 #' TVEM (time-varying effect model) SAS macro users' guide (Version 3.1.1).
 #' University Park: The Methodology Center, Penn State. Retrieved from
-#' <http://methodology.psu.edu>.
+#' <http://methodology.psu.edu>. Available online at
+#' <https://aimlab.psu.edu/tvem/tvem-sas-macro/> and archived at  
+#' <https://github.com/dziakj1/MethodologyCenterTVEMmacros>
+#' and
+#' <https://scholarsphere.psu.edu/collections/v41687m23q>.
 #' @references
 #' Liang, K. Y., Zeger, S. L. Longitudinal data analysis using generalized linear
 #' models. Biometrika. 1986; 73:13-22. <doi:10.1093/biomet/73.1.13>
@@ -320,7 +324,7 @@ tvem <- function(data,
     varying_effects_names <- NA;
   }
   if (length(num_knots)>1) {
-      stop(paste("Please provide a single number for num_knots."));
+    stop(paste("Please provide a single number for num_knots."));
   };
   crit_value <- qnorm(1-alpha/2);
   if (use_weights) {
@@ -443,13 +447,17 @@ tvem <- function(data,
                         method=method);
   }
   within_subject_variance <- sapply(X=unique(data_for_analysis[,id_variable_name]),
-               function(X){var(data_for_analysis[which(data_for_analysis[,id_variable_name]==X),response_name],na.rm=TRUE)});
-  highest_within_subject_variance_not_counting_singletons <- 
-    max(within_subject_variance,na.rm=TRUE)
-  if (highest_within_subject_variance_not_counting_singletons<1e-10) {
-    warning(paste("The variable specified as the output seems to be",
-    "time-invariant within subject \n despite multiple measurements",
-    "per subject.  Results may not be interpretable."));
+                                    function(X){var(data_for_analysis[which(data_for_analysis[,id_variable_name]==X),response_name],na.rm=TRUE)});
+  if (length(within_subject_variance)>0) {
+    if (sum(!is.na(within_subject_variance))>0) {
+      highest_within_subject_variance_not_counting_singletons <- 
+        max(within_subject_variance,na.rm=TRUE)
+      if (highest_within_subject_variance_not_counting_singletons<1e-10) {
+        warning(paste("The variable specified as the output seems to be",
+                      "time-invariant within subject \n despite multiple measurements",
+                      "per subject.  Results may not be interpretable."));
+      }
+    } 
   }
   ##################################
   # Extract coefficient estimates;
