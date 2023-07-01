@@ -33,7 +33,7 @@ install_github("dziakj1/tvem")
 It is also available from the CRAN archive using the command 
 ```{r,eval=FALSE}
 install.packages("tvem")
-````
+```
 
   Of course, if you are viewing this guide from within R using the `vignette()` function, then the package is already installed.
  
@@ -351,10 +351,10 @@ cross_sectional_example <- simulate_cross_sectional_tvem_example(
   n_subjects = 500,  
   min_time = 20,
   max_time = 70,
-  simulate_binary = TRUE,
-)
+  simulate_binary = TRUE)
+  
 print(head(cross_sectional_example))
-print(summary(cross_sectional_example))
+
 
 model1_cross_sectional <- tvem(data=cross_sectional_example,
                                num_knots=2,
@@ -370,7 +370,7 @@ model2_cross_sectional <- tvem(data=cross_sectional_example,
                                id=subject_id,
                                time=time)
 print(model2_cross_sectional)
-plot(model2_cross_sectional)
+
 ```
 
 # References
@@ -393,7 +393,7 @@ Cambridge: Cambridge University Press.
 # Acknowledgements
 
 This software was developed by John Dziak at the Methodology Center at Pennsylvania State University, under the supervision of Donna Coffman of Temple University.
-We thank Patricia Berglund, Danielle Cabel, and Yajnaseni Chakraborti for their very valuable help with testing the package and documentation.
+We thank Patricia Berglund, Danielle Cabel, Yajnaseni Chakraborti, and Hanjoo Kim for their very valuable help with testing the package and documentation.
 
 The development of this software was part of a research project supported by National Institutes of Health grants P50 DA039838 from the National Institute of Drug Abuse and 1R01 CA229542-01 from the National Cancer Institute and the NIH Office of Behavioral and Social Science Research. Content is solely the responsibility of the authors and does not necessarily represent the official views of the funding institutions mentioned above. 
 

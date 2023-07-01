@@ -49,7 +49,7 @@ select_tvem <- function(max_knots=5,
     # I got this trick from https://statisticsglobe.com/remove-element-from-list-in-r ;
     #    ans1 <- try(suppressWarnings(do.call(tvem, more_args)));
     ans1 <- do.call(tvem, more_args); 
-    if (class(ans1)=="try-error") {
+    if (inherits(ans1,"try-error")) {
       IC_values[num_knots_values_index] <- Inf;
     } 
     if (use_bic==FALSE) {

@@ -37,3 +37,14 @@ a table of information criteria.
 \description{
 select_tvem:  Select number of interior knots for an unpenalized TVEM.
 }
+\examples{
+set.seed(123)
+the_data <- simulate_tvem_example(n_subjects=200)
+tvem_model <- tvem(data=the_data,
+              formula=y~1,
+              id=subject_id,
+              time=time)
+print(tvem_model)
+plot(tvem_model)
+
+}

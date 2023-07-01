@@ -11,6 +11,7 @@ tvem(
   time,
   invar_effects = NULL,
   family = gaussian(),
+  weights = NULL,
   num_knots = 20,
   spline_order = 3,
   penalty_function_order = 1,
@@ -20,7 +21,8 @@ tvem(
   basis = "ps",
   method = "fREML",
   use_naive_se = FALSE,
-  print_gam_formula = FALSE
+  print_gam_formula = FALSE,
+  normalize_weights = TRUE
 )
 }
 \arguments{
@@ -63,19 +65,23 @@ For a binary outcome, use binomial().  For a count outcome, you can
 use poisson().  The parentheses after the family name are there because it is 
 actually a built-in R object.}
 
+\item{weights}{An optional sampling weight variable.}
+
 \item{num_knots}{The number of interior knots assumed per spline function,
-not counting exterior knots. The user can either specify a single number
-for each function (e.g., 3), or else a vector of numbers, the first
-for the intercept and the others for the time-varying covariates 
-(e.g., c(2,3,2)). If penalized=TRUE is used, it is
-probably okay to leave num_knots at its default.}
+not counting exterior knots. This is assumed to be the same for each function.
+If penalized=TRUE is used, it is probably okay to leave num_knots at its default.}
 
 \item{spline_order}{The shape of the function between knots, with a
 default of 3 representing cubic spline.}
 
 \item{penalty_function_order}{The order of the penalty function (see 
-Eilers and Marx, 1996), with a default of 2 for second-order 
-difference penalty.}
+Eilers and Marx, 1996), with a default of 1 for first-order 
+difference penalty.  Eilers and Marx (1996) used second-order difference
+but we found first-order seemed to perform parsimoniously in this setting.
+Please feel free to consider setting this to 2 to explore other possible 
+results. The penalty function is something analogous to a prior distribution
+describing how smooth or flat the estimated coefficient functions should be,  
+with 1 being smoothest.}
 
 \item{grid}{The number of points at which the spline coefficients
 will be estimated, for the purposes of the pointwise estimates and 
@@ -103,12 +109,19 @@ leaving it at the default value.}
 details passed on to the mgcv::bam function as method).  We strongly recommend
 leaving it at the default value.}
 
-\item{use_naive_se}{Save time by using a simpler, less valid formula for 
+\item{use_naive_se}{Whether to save time by using a simpler, less valid formula for 
 standard errors. Only do this if you are doing TVEM inside a loop for
 bootstrapping or model selection and plan to ignore these standard errors.}
 
-\item{print_gam_formula}{Print the formula used to do the back-end calculations
+\item{print_gam_formula}{whether to print the formula used to do the back-end calculations
 in the bam (large data gam) function in the mgcv package.}
+
+\item{normalize_weights}{Whether to rescale (standardize) the weights variable to have a mean 
+of 1 for the dataset used in the analysis. Setting this to FALSE might lead to invalid 
+standard errors caused by misrepresentation of the true sample size. This 
+option is irrelevant and ignored if a weight variable is not specified, because
+in that case all the weights are effectively 1 anyway.  An error will result if the function is asked to rescale weights and any of the weights are negative; however, it is very rare for
+sampling weights to be negative.}
 }
 \value{
 An object of type tvem. The components of an object of 
@@ -127,7 +140,14 @@ errors and pointwise confidence intervals.}
 invar_effects, their estimated regression coefficients and 
 standard errors are shown here.}
 \item{model_information}{A list summarizing the options
-specified in the call to the function.}
+specified in the call to the function, as well as fit statistics
+based on the log-pseudo-likelihood function. The term pseudo
+here means that the likelihood function is evaluated as though
+the correct knot locations were known, as though the 
+observations were independent and, if applicable, as though sampling 
+weights were multiples of a participant rather than 
+inverse probabilities. This allows tvem to be used without
+specifying a fully parametric probability model.}
 \item{back_end_model}{The full output from the bam() 
 function from the mgcv package, which was used to fit the 
 penalized spline regression model underlying the TVEM.}
@@ -163,27 +183,44 @@ mgcv package ("Mixed GAM Computation Vehicle with GCV/AIC/REML smoothness
 estimation and GAMMs by REML/PQL") by Simon Wood is used for back-end
 calculations (see Wood, Goude, & Shaw, 2015).
 }
+\examples{
+set.seed(123)
+the_data <- simulate_tvem_example()
+tvem_model <- tvem(data=the_data,
+              formula=y~x1,
+              invar_effects=~x2,
+              id=subject_id,
+              time=time)
+print(tvem_model)
+plot(tvem_model)
+
+}
 \references{
 Eilers, P. H. C., & Marx, B.  D. (1996). Flexible smoothing with B-splines
-and penalties. Statistical Science, 11: 89-121.
+and penalties. Statistical Science, 11: 89-121. <doi:10.1214/ss/1038425655>
 
 Hastie, T, Tibshirani, R. (1993). Varying-coefficient models. Journal 
-of the Royal Statistical Socety, B, 55:757-796.
+of the Royal Statistical Socety, B, 55:757-796. <doi:10.1057/9780230280830_39>
 
 Li, R., Dziak, J. J., Tan, X., Huang, L., Wagner, A. T., & Yang, J. (2017).
 TVEM (time-varying effect model) SAS macro users' guide (Version 3.1.1).
 University Park: The Methodology Center, Penn State. Retrieved from
-http://methodology.psu.edu
+<http://methodology.psu.edu>. Available online at
+<https://aimlab.psu.edu/tvem/tvem-sas-macro/> and archived at  
+<https://github.com/dziakj1/MethodologyCenterTVEMmacros>
+and
+<https://scholarsphere.psu.edu/collections/v41687m23q>.
 
 Liang, K. Y., Zeger, S. L. Longitudinal data analysis using generalized linear
-models. Biometrika. 1986; 73:13-22.
+models. Biometrika. 1986; 73:13-22. <doi:10.1093/biomet/73.1.13>
 
 Tan, X., Shiyko, M. P., Li, R., Li, Y., & Dierker, L. (2012). A time-varying
 effect model for intensive longitudinal data. Psychological Methods, 17: 
-61-77.
+61-77. <doi:10.1037/a0025814>
 
 Wood, S. N., Goude, Y., & Shaw, S. (2015). Generalized additive models 
-for large data sets. Applied Statistics, 64: 139-155.
+for large data sets. Applied Statistics, 64: 139-155. ISBN 10 1498728332, 
+ISBN 13 978-1498728331.
 }
 \keyword{Statistics|models|regression}
 \keyword{Statistics|smooth}

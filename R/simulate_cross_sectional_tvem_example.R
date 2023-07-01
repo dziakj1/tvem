@@ -39,7 +39,7 @@
 #'
 #' @keywords Statistics|datagen
 #'
-#' @importFrom stats rbinom rnorm
+#' @importFrom stats rbinom rnorm runif
 #'
 #' @examples 
 #' set.seed(16802)
