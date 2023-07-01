@@ -70,7 +70,6 @@ plot.tvem <- function(x,
                                    ymin,
                                    ymax,
                                    exponentiate) {
-      print(ymax-ymin)
       if (ymax - ymin < 1e-2) {
          warning(paste("At least one of the coefficient functions has been",
                        "estimated as essentially equal to zero across the",
