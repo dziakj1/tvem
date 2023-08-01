@@ -381,7 +381,7 @@ print(model2_cross_sectional)
 
 * Hastie, T, & Tibshirani, R. (1993). Varying-coefficient models. Journal of the Royal Statistical Socety, B, 55:757-796.
 
-* Li, R., Dziak, J. J., Tan, X., Huang, L., Wagner, A. T., & Yang, J. (2017). TVEM (time-varying effect model) SAS macro users' guide (Version 3.1.1). University Park: The Methodology Center, Penn State. Available online at [https://www.methodology.psu.edu/downloads/tvem/])(https://www.methodology.psu.edu/downloads/tvem/) and archived at  [https://github.com/dziakj1/MethodologyCenterTVEMmacros](https://github.com/dziakj1/MethodologyCenterTVEMmacros) and [https://scholarsphere.psu.edu/collections/v41687m23q](https://scholarsphere.psu.edu/collections/v41687m23q).
+* Li, R., Dziak, J. J., Tan, X., Huang, L., Wagner, A. T., & Yang, J. (2017). TVEM (time-varying effect model) SAS macro users' guide (Version 3.1.1). University Park: The Methodology Center, Penn State. Available online at   [https://github.com/dziakj1/Methodology_Center_TVEM_Macros](https://github.com/dziakj1/Methodology_Center_TVEM_Macros) and [https://scholarsphere.psu.edu/collections/v41687m23q](https://scholarsphere.psu.edu/collections/v41687m23q).
 
 * Ruppert, D., Wand, M. P., & Carroll, R. J. (2003). Semiparametric regression. 
 Cambridge: Cambridge University Press.
